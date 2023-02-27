@@ -21,6 +21,7 @@ public class Contact {
     @Id
     private Long contactId;
     private Long userId;
+    private String title;
     private String description;
     private LocalDate createDate;
 }

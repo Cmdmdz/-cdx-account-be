@@ -23,4 +23,9 @@ public class Payment {
     private Integer amount;
     private Boolean isPayment;
     private LocalDate updateDate;
+    private Long accountId;
+    private Long userId;
+    private Integer amountPaid;
+    private String visa;
+
 }

@@ -1,7 +1,5 @@
 package com.cdx.account.cdxaccountbe.services;
 
-import com.cdx.account.cdxaccountbe.model.request.AccountRequest;
-import com.cdx.account.cdxaccountbe.model.response.AccountResponse;
 import com.cdx.account.cdxaccountbe.model.response.HistoryResponse;
 import com.cdx.account.cdxaccountbe.repository.AccountRepository;
 import com.cdx.account.cdxaccountbe.repository.PaymentRepository;
@@ -21,26 +19,58 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class HistoryPaymentService {
     private final AccountRepository accountRepository;
-    private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
 
-    public ResponseEntity<?> execute(AccountRequest request) {
-        Optional<User> users = userRepository.findById(request.getUserId());
-        Optional<Payment> payments = paymentRepository.findById(request.getPaymentId());
-        Optional<Account> accounts = accountRepository.findById(request.getPaymentId());
+    private final UserRepository userRepository;
 
-        if (!(users.isPresent() && payments.isPresent() && accounts.isPresent())){
-            return new  ResponseEntity<>("Invalid Requested", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<?> execute(Long userId) {
+
+        User  users = findByIdUser(userId);
+
+        if (users == null) {
+            return new ResponseEntity<>("Invalid Requested", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        Account account = accounts.get();
-        User user = users.get();
-        Payment payment = payments.get();
-        return new  ResponseEntity<>(HistoryResponse.builder()
-                .accountType(account.getAccountType())
-                .paymentId(payment.getPaymentId())
-                .amount(account.getAmount())
-                .isPayment(payment.getIsPayment())
-                .createDate(payment)
-                .build(), HttpStatus.OK);
+
+        List<Payment> payments;
+
+        if ("admin".equals(users.getRole())) {
+            payments = paymentRepository.findAll();
+        } else {
+            payments = paymentRepository.findAllByUserId(userId);
+        }
+
+        List<HistoryResponse> historyResponseList = payments.stream()
+                .map(payment -> {
+
+                    Optional<Account> accounts = accountRepository.findById(payment.getAccountId());
+
+                    User userBypay = findByIdUser(payment.getUserId());
+                    if (userBypay == null || accounts.isEmpty())
+                        return HistoryResponse.builder().build();
+
+                    Account account = accounts.get();
+
+                    return HistoryResponse.builder()
+                            .accountType(account.getAccountType())
+                            .paymentId(payment.getPaymentId())
+                            .amount(account.getAmount())
+                            .isPayment(payment.getIsPayment() ? "Paid" : "Unpaid")
+                            .updateDate(payment.getUpdateDate(
+                            ))
+                            .amountPaid(payment.getAmountPaid())
+                            .username(userBypay.getUsername())
+                            .visa(account.getVisa())
+                            .build();
+
+                }).toList();
+        return new ResponseEntity<>(historyResponseList, HttpStatus.OK);
+    }
+
+    private User findByIdUser(Long userId) {
+        Optional<User> users = userRepository.findById(userId);
+        if (users.isEmpty())
+            return null;
+
+        return users.get();
     }
 }

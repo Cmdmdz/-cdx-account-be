@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @Builder
@@ -21,7 +23,10 @@ public class Account {
     private Long accountId;
     private String accountType;
     private String about;
-    private Long paymentId;
     private Integer amount;
     private Long userId;
+    private Integer amountPaid;
+    private String visa;
+    private Boolean isPayment;
+    private LocalDate updateDate;
 }

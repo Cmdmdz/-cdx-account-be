@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -13,9 +14,14 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class AccountResponse {
 
+    private Long accountId;
     private String accountType;
     private String about;
-    private Long paymentId;
     private Integer amount;
+    private Long userId;
+    private Integer amountPaid;
+    private String visa;
+    private String isPayment;
+    private LocalDate updateDate;
     private String username;
 }

@@ -1,13 +1,11 @@
 package com.cdx.account.cdxaccountbe.model.response;
 
-import com.cdx.account.cdxaccountbe.repository.dao.Payment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -18,6 +16,10 @@ public class HistoryResponse {
     private Long paymentId;
     private String accountType;
     private Integer amount;
-    private LocalDateTime createDate;
-    private Boolean isPayment;
+    private LocalDate updateDate;
+    private String isPayment;
+    private Integer amountPaid;
+    private String visa;
+    private String username;
+
 }

@@ -26,6 +26,8 @@ public class RegisterService {
                     .password(request.getPassword())
                     .firstname(request.getFirstname())
                     .lastname(request.getLastname())
+                    .role("user")
+                    .email(request.getEmail())
                     .build());
             return new ResponseEntity<>("Register successfully", HttpStatus.CREATED);
 

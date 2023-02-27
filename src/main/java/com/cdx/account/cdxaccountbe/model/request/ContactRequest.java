@@ -5,17 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import java.time.LocalDate;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AccountRequest {
+public class ContactRequest {
 
-    private String accountType;
-    private String isPayment;
-    private String about;
-    private Integer amount;
+    private String title;
+    private String description;
 }

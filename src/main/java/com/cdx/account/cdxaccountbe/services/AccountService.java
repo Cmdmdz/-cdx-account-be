@@ -13,32 +13,65 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
-    private final PaymentRepository paymentRepository;
 
-    public ResponseEntity<?> execute(AccountRequest request) {
-        Optional<User> users = userRepository.findById(request.getUserId());
-        Optional<Payment> payments = paymentRepository.findById(request.getPaymentId());
-        Optional<Account> accounts = accountRepository.findById(request.getPaymentId());
-
-        if (!(users.isPresent() && payments.isPresent() && accounts.isPresent())){
-            return new  ResponseEntity<>("Invalid Requested", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<?> execute(Long userId) {
+        User users = findByIdUser(userId);
+        if (users == null) {
+            return new ResponseEntity<>("Invalid Requested", HttpStatus.BAD_REQUEST);
         }
-        Account account = accounts.get();
-        User user = users.get();
-        Payment payment = payments.get();
-        return new  ResponseEntity<>(AccountResponse.builder()
-                .accountType(account.getAccountType())
-                .username(user.getUsername())
-                .about(account.getAbout())
-                .paymentId(payment.getPaymentId())
-                .amount(account.getAmount())
-                .build(), HttpStatus.OK);
+
+        List<Account> userList ;
+
+        if ("admin".equals(users.getRole())) {
+            userList = accountRepository.findAll();
+        } else {
+            userList = accountRepository.findAllByUserId(userId);
+        }
+
+        List<AccountResponse> accounts = userList
+                .stream()
+                .map(account -> {
+
+                    User userByAccountUserId = findByIdUser(account.getUserId());
+
+                    if (userByAccountUserId == null )
+                        return AccountResponse.builder().build();
+
+                    return AccountResponse.builder()
+                            .accountId(account.getAccountId())
+                            .username(userByAccountUserId.getUsername())
+                            .accountType(account.getAccountType())
+                            .amount(account.getAmount())
+                            .about(account.getAbout())
+                            .visa(account.getVisa())
+                            .updateDate(account.getUpdateDate())
+                            .isPayment(Boolean.TRUE.equals(account.getIsPayment()) ? "Paid" : "Unpaid")
+                            .userId(account.getUserId())
+                            .updateDate(account.getUpdateDate())
+                            .amountPaid(account.getAmountPaid())
+                            .build();
+                }).toList();
+
+
+        return new ResponseEntity<>(accounts, HttpStatus.OK);
+    }
+
+    private User findByIdUser(Long userId) {
+        Optional<User> users = userRepository.findById(userId);
+        if (users.isEmpty())
+            return null;
+
+        return users.get();
     }
 }
